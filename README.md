@@ -1,229 +1,136 @@
-# Point Process Modeling for Network Security  
-## Inference, Declustering, and Statistical Learning of Hawkes Processes
+<h1 align="center">
+Inference and Model Assessment of Hawkes Processes for Cyber Event Data
+</h1>
+
+<p align="center">
+<b>Zixuan Xu</b><br>
+Mixture Hawkes Project
+</p>
+
+<p align="center">
+<img src="https://img.shields.io/badge/Model-Hawkes%20Process-blue">
+<img src="https://img.shields.io/badge/Method-EM%20Algorithm-green">
+<img src="https://img.shields.io/badge/Validation-Time%20Rescaling-orange">
+<img src="https://img.shields.io/badge/Field-Cybersecurity-red">
+</p>
 
 ---
 
-## Highlights (TL;DR)
+## 📊 Project Overview
 
-- Linear-time $O(N)$ likelihood evaluation (vs. $O(N^2$))  
-- Stable inference via **Branching EM (Stochastic Declustering)**  
-- Statistically valid uncertainty via **Parametric Bootstrap**  
-- Empirical validation on real-world cybersecurity traffic  
-- Interpretable metric (branching ratio $\eta$) for attack classification  
+This project presents a full statistical pipeline for modeling cyber attack event data using Hawkes processes, including inference, model validation, and interpretation.
 
 ---
 
-## Abstract
+## 🎯 Research Objective
 
-Modern cyber-attacks exhibit strong temporal dependence and cascading behavior, which cannot be captured by traditional Poisson-based models.  
-
-This project develops a rigorous statistical framework based on **Hawkes Processes**, enabling:
-
-- Modeling of **self-exciting attack dynamics**
-- Recovery of **latent triggering structures**
-- Quantification of **endogenous vs exogenous threats**
-
-We implement a full inference pipeline from scratch, combining **stochastic declustering**, **efficient likelihood computation**, and **statistical validation**, and apply it to real network traffic data.
-
----
-## Implementation Highlights
-
-This project implements and empirically validates the following
-components of the Hawkes process inference pipeline:
-
-1. **Stable Inference via Branching EM (Stochastic Declustering)**  
-   Implements the stochastic declustering framework of Zhuang et al.
-   (2002), demonstrating that naive mixture-EM causes component collapse
-   due to shared history collinearity, and resolving it via event-level
-   branching attribution.
-
-2. **Linear-Time O(N) Likelihood Evaluation**  
-   Applies the Markovian recursion of Ozaki (1979) to reduce likelihood
-   computation from O(N²) to O(N).  Empirically verifies the complexity
-   reduction via a controlled timing benchmark with log-log slope fitting.
-
-3. **Statistically Valid Uncertainty Quantification**  
-   Replaces invalid nonparametric event resampling with parametric
-   bootstrap (simulate → refit → collect), correctly preserving the
-   self-exciting causal structure of the point process.
-
-4. **Interpretable Cybersecurity Metric**  
-   Applies the branching ratio η = α/β as a quantitative indicator of
-   attack infectivity, distinguishing automated background scanning
-   (η → 0) from coordinated APT lateral movement (η → 1).
+To investigate whether cyber attack events exhibit self-exciting behavior and evaluate the adequacy of Hawkes processes in capturing temporal dependence.
 
 ---
 
-## Methodology
+## 📌 Motivation
 
-### Hawkes Process Model
+Cyber attack events are often modeled as independent Poisson processes.
 
-We consider a univariate Hawkes process with exponential kernel:
-
-$$
-\lambda(t) = \mu + \sum_{t_i < t} \alpha e^{-\beta (t - t_i)}
-$$
-
-where:
-- $\mu$: baseline intensity (exogenous events)  
-- $\alpha, \beta$: excitation parameters  
-- $\eta = \alpha / \beta$: branching ratio  
+However, real-world data frequently exhibit clustering and temporal dependence, motivating the use of self-exciting point process models.
 
 ---
 
-### Stochastic Declustering (Branching EM)
+## ⚙️ Methodology
 
-We model the latent structure:
-
-- Each event is either:
-  - Background (Poisson)  
-  - Triggered by a previous event  
-
-The EM algorithm:
-
-- **E-step:** Estimate triggering probabilities  
-- **M-step:** Update parameters via weighted likelihood  
-
-This avoids degeneracy common in naive mixture models.
+- Hawkes process modeling of event arrivals  
+- EM-based maximum likelihood estimation  
+- Model selection using Bayesian Information Criterion (BIC)  
+- Bootstrap-based uncertainty quantification  
+- Time-rescaling test for goodness-of-fit validation  
 
 ---
 
-### Computational Optimization
+## 📈 Key Results
 
-Using recursive updates:
-
-$$
-A_i = e^{-\beta (t_i - t_{i-1})}(1 + A_{i-1})
-$$
-
-we reduce likelihood computation to linear time.
+- Evidence of temporal dependence and clustering  
+- Weak but persistent self-excitation  
+- Clear deviation from Poisson assumptions  
+- Model misspecification detected via time-rescaling  
 
 ---
 
-### Uncertainty Quantification
+## 🧠 Interpretation
 
-We employ **Parametric Bootstrap**:
+The analysis shows that cyber attacks are not purely random but exhibit mild clustering behavior.
 
-1. Fit model → obtain parameters  
-2. Simulate synthetic datasets  
-3. Re-estimate parameters  
-4. Construct confidence intervals  
+Compared to a homogeneous Poisson process, the Hawkes model captures temporal dependence and provides a more realistic representation of cyber attack dynamics.
 
----
-
-## Experimental Design
-
-### Dataset
-
-- Real-world network traffic dataset: **UNSW-NB15**  
-- Temporal extraction of attack events  
+However, the time-rescaling test reveals systematic deviations, indicating that the model does not fully capture the underlying structure.
 
 ---
 
-### Evaluation Goals
+## 🖼️ Model Validation (Time-Rescaling Test)
 
-- Validate parameter recovery  
-- Verify $O(N)$ scaling  
-- Analyze attack dynamics via $\eta$  
+<p align="center">
+<img src="final/time_rescaling.png" width="600">
+</p>
 
----
+The figure shows the empirical distribution of transformed event times compared to the theoretical uniform distribution.
 
-### Key Findings
+A correctly specified model should align closely with the diagonal line.
 
-- MLE exhibits:
-
-$$
-O(N^{-1/2})
-$$
-
-convergence behavior  
-
-- Branching EM significantly improves:
-  - Stability  
-  - Interpretability  
-
-- Distinct regimes of $\eta$ correspond to:
-  - Random scanning vs. coordinated attacks  
+In this case, the deviation from the diagonal indicates that the Hawkes model does not fully capture the underlying event dynamics, suggesting model misspecification.
 
 ---
 
-## Strategic Interpretation: Branching Ratio ($\eta$)
+## 🧩 Key Contributions
 
-$$
-\eta = \frac{\alpha}{\beta}
-$$
-
-| Regime | Interpretation | Security Implication |
-|--------|--------------|--------------------|
-| $\eta \to 0$  | Exogenous (random scanning) | Baseline filtering |
-| $\eta \to 1$  | Highly endogenous (APT behavior) | Immediate containment |
+- Demonstrated deviation from Poisson assumptions  
+- Quantified self-excitation effects  
+- Applied statistical validation via time-rescaling  
+- Identified limitations of standard Hawkes models  
 
 ---
 
-## Repository Structure
+## 📁 Repository Structure
 
-```text
-├── data/
-│   └── UNSW-NB15_1.csv
-├── src/
-│   ├── simulator.py
-│   ├── inference.py
-│   └── data_loader.py
-├── 01_Hawkes_Analysis.ipynb
-├── 02_Cybersecurity_Application.ipynb
-├── requirements.txt
-└── README.md
-```
-
----
-
-## Reproducibility
-
-### Environment
-
-```bash
-pip install -r requirements.txt
-```
+    Mixture-Hawkes-Project/
+    │
+    ├── data/                 # (not included due to size)
+    ├── notebooks/            # development notebooks
+    │   ├── 01_Hawkes_Analysis.ipynb
+    │   ├── 02_Cybersecurity_Application.ipynb
+    │
+    ├── final/                # polished research output
+    │   ├── hawkes_cyber_analysis.ipynb
+    │   ├── hawkes_cyber_analysis.pdf
+    │   ├── time_rescaling.png
+    │
+    ├── README.md
 
 ---
 
-### Execution
+## 📦 Data
 
-1. `01_Hawkes_Analysis.ipynb`  
-2. `02_Cybersecurity_Application.ipynb`  
+The dataset is not included due to size constraints.
 
----
+The code automatically falls back to synthetic data for demonstration.
 
-## Limitations
-
-- Assumes exponential kernel (may miss long-memory effects)  
-- Univariate model (no cross-excitation between nodes)  
-- Dataset preprocessing may introduce bias  
+To use real data, place your CSV file in a `data/` folder.
 
 ---
 
-## Future Work
+## 🚀 Future Work
 
-- Multivariate Hawkes processes (networked attacks)  
-- Non-parametric kernel estimation  
-- Online / streaming inference  
-- Integration with real-time intrusion detection systems  
+- Multivariate Hawkes processes  
+- Bayesian inference (full uncertainty modeling)  
+- Nonparametric kernel estimation  
 
 ---
 
-## References
+## 🧾 Summary
 
-- Hawkes, A. G. (1971). Spectra of some self-exciting and mutually exciting point processes. *Biometrika*, 58(1), 83–90. https://doi.org/10.1093/biomet/58.1.83  
+A full pipeline for modeling and validating cyber event dynamics using Hawkes processes, combining inference, statistical testing, and model critique.
 
-- Dempster, A. P., Laird, N. M., & Rubin, D. B. (1977). Maximum likelihood from incomplete data via the EM algorithm. *Journal of the Royal Statistical Society: Series B (Methodological)*, 39(1), 1–22. https://www.jstor.org/stable/2984875  
+---
 
-- Ogata, Y. (1981). On Lewis' simulation method for point processes. *IEEE Transactions on Information Theory*, 27(1), 23–31. https://doi.org/10.1109/TIT.1981.1056305  
+## 👤 Author
 
-- Zhuang, J., Ogata, Y., & Vere-Jones, D. (2002). Stochastic declustering of space-time earthquake occurrences. *Journal of the American Statistical Association*, 97(458), 369–380. https://doi.org/10.1198/016214502760046925  
-
-## Author
-
-**[Zihan Xu]**
-
-- Email: [haniizihanxu@gmail.com]  
+Zixuan Xu
   

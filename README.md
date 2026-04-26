@@ -3,7 +3,7 @@ Inference and Model Assessment of Hawkes Processes for Cyber Event Data
 </h1>
 
 <p align="center">
-<b>Zixuan Xu</b><br>
+<b>Zihan Xu</b><br>
 Mixture Hawkes Project
 </p>
 
@@ -132,5 +132,5 @@ A full pipeline for modeling and validating cyber event dynamics using Hawkes pr
 
 ## 👤 Author
 
-Zixuan Xu
+Zihan Xu
   
